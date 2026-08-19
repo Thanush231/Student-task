@@ -1,6 +1,12 @@
+"use client";
+
 import TaskCard from "./TaskCard";
 
 export default function TaskList({ tasks }) {
+  function handleDelete(taskId) {
+    console.log("Delete task:", taskId);
+  }
+
   if (!tasks.length) {
     return <p>No Tasks Available</p>;
   }
@@ -14,6 +20,7 @@ export default function TaskList({ tasks }) {
           description={task.description}
           status={task.status}
           priority={task.priority}
+          onDelete={() => handleDelete(task.id)}
         />
       ))}
     </div>

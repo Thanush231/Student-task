@@ -1,8 +1,11 @@
+"use client";
+
 export default function TaskCard({
   title,
   description,
   status,
   priority,
+  onDelete,
 }) {
   return (
     <div className="bg-white rounded-xl shadow-md p-5 border">
@@ -26,6 +29,24 @@ export default function TaskCard({
         </span>{" "}
         {priority}
       </div>
+
+      <div className="flex gap-3 mt-5">
+  <button
+    type="button"
+    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+    onClick={() => console.log("Task completed:", title)}
+  >
+    Complete
+  </button>
+
+  <button
+    type="button"
+    onClick={onDelete}
+    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+  >
+    Delete
+  </button>
+</div>
     </div>
   );
 }
