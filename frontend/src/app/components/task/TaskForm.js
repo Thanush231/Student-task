@@ -1,88 +1,108 @@
 "use client";
 
 import { useState } from "react";
-import Input from "../ui/Input";
-import Button from "../ui/Button";
+import { useRouter } from "next/navigation";
+
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function TaskForm() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState("Medium");
-  const [dueDate, setDueDate] = useState("");
+  const router = useRouter();
 
-  function handleSubmit(event) {
-    event.preventDefault();
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    priority: "Medium",
+    due_date: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    console.log({
-      title,
-      description,
-      priority,
-      dueDate
+  function handleChange(event) {
+    setForm({
+      ...form,
+      [event.target.name]: event.target.value,
     });
   }
 
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to create task");
+      }
+
+      router.push("/dashboard/tasks");
+      router.refresh();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block mb-2 text-sm font-medium">
-          Task Title
-        </label>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <input
+        name="title"
+        value={form.title}
+        onChange={handleChange}
+        placeholder="Task Title"
+        className="w-full rounded border p-3"
+        required
+      />
 
-        <Input
-          type="text"
-          name="title"
-          placeholder="Enter task title"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-        />
-      </div>
+      <textarea
+        name="description"
+        value={form.description}
+        onChange={handleChange}
+        placeholder="Description"
+        className="w-full rounded border p-3"
+        rows={3}
+      />
 
-      <div>
-        <label className="block mb-2 text-sm font-medium">
-          Description
-        </label>
+      <select
+        name="priority"
+        value={form.priority}
+        onChange={handleChange}
+        className="w-full rounded border p-3"
+      >
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+      </select>
 
-        <Input
-          type="text"
-          name="description"
-          placeholder="Enter task description"
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-        />
-      </div>
+      <input
+        type="date"
+        name="due_date"
+        value={form.due_date}
+        onChange={handleChange}
+        className="w-full rounded border p-3"
+      />
 
-      <div>
-        <label className="block mb-2 text-sm font-medium">
-          Priority
-        </label>
+      {error && <p className="text-red-600">{error}</p>}
 
-        <select
-          name="priority"
-          value={priority}
-          onChange={(event) => setPriority(event.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2"
-        >
-          <option value="Low">Low</option>
-          <option value="Medium">Medium</option>
-          <option value="High">High</option>
-        </select>
-      </div>
-      <div>
-  <label className="block mb-2 text-sm font-medium">
-    Due Date
-  </label>
-
-  <Input
-    type="date"
-    name="dueDate"
-    value={dueDate}
-    onChange={(event) => setDueDate(event.target.value)}
-  />
-</div>
-
-      <Button type="submit">
-        Add Task
-      </Button>
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full rounded bg-blue-600 p-3 text-white"
+      >
+        {loading ? "Adding..." : "Add Task"}
+      </button>
     </form>
   );
 }
