@@ -1,8 +1,16 @@
+"use client";
+
 import TaskCard from "./TaskCard";
 
-export default function TaskList({ tasks }) {
+export default function TaskList({
+  tasks,
+  onDelete,
+  onComplete,
+  onEdit,
+  readOnly = false,
+}) {
   if (!tasks.length) {
-    return <p>No Tasks Available</p>;
+    return <p>No Completed Tasks</p>;
   }
 
   return (
@@ -14,6 +22,11 @@ export default function TaskList({ tasks }) {
           description={task.description}
           status={task.status}
           priority={task.priority}
+          due_date={task.due_date}
+          onDelete={() => onDelete?.(task.id)}
+          onComplete={() => onComplete?.(task)}
+          onEdit={() => onEdit?.(task)}
+          readOnly={readOnly}
         />
       ))}
     </div>
